@@ -1,0 +1,30 @@
+{
+	"id":"about-proj-0",
+	"Title":"About This Project",
+	"Updated":"2019-06-17T15:07:00.000Z",
+	"Path":"/",
+	"Keywords":"About Project",
+	"Lang":"en",
+	"Image":"",
+	"Description":"About My Project",
+	"Content":[[
+		["p","I Started this project with one idea in my mind, solve the two biggest problem of other courses websites and books, the first one is special characters that show in a unreadable way like matrices and numbers groups, and the second one is the errors that exist in a lots of exams, not only in the web but even in printed books, this problem force you to spend hours trying to solve unsolvable problems, we all experienced that at least one time in our life."],
+		["hr"],
+		["p","And Because all we know how hard is it to remember all your lessons especially if you revise the day before the exam like me, or if you have a book with thousand of pages for each teacher, you probably get bored and tired before you complete the first ten pages."],
+		["hr"],
+		["p",
+			"I want from any one to contribute in this project by sending the content to my address email ",
+			["a",{"href":"mailto:alibouhrouche@gmail.com"},"alibouhrouche@gmail.com"],
+			" with  ", 
+			["code","Courses Contribution"],
+			"  as the subject or using GitHub."
+		],
+		["p","You can contact me in other social network:"],
+		["ul",
+			["li",["a",{"href":"https://twitter.com/albouhrouche"},"Twitter @alibouhrouche"]],
+			["li",["a",{"href":"https://facebook.com/albouhrouche"},"Facebook @alibouhrouche"]],
+			["li",["a",{"href":"https://instagram.com/albouhrouche"},"Instagram @alibouhrouche"]],
+			["li",["a",{"href":"https://t.me.com/albouhrouche"},"Telegram @alibouhrouche"]]
+		]
+	]]
+}

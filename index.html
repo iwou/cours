@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Smart Studying</title>
+    <meta charset="UTF-8">
+    <meta id="keyw" name="keywords" content="Smart, Study, View, Cours" />
+    <meta id="desc" name="description" content="Smart Studying Cours" />
+    <meta property="og:type" content="article">
+    <meta id="url1" property="og:url" content="https://cours.smartstudying.cf">
+    <meta id="title1" property="og:title" content="Smart Studying Cours">
+    <meta id="desc1" property="og:description" content="Smart Studying Cours">
+    <meta id="img1" property="og:image" content="https://cours.smartstudying.cf/images/social-banner.jpg">
+    <meta name="twitter:card" content="summary">
+    <meta id="title2" name="twitter:title" content="Smart Studying Cours">
+    <meta id="desc2" name="twitter:description" content="Smart Studying Cours">
+    <meta id="url2" name="twitter:url" content="https://cours.smartstudying.cf">
+    <meta id="img2" name="twitter:image" content="https://cours.smartstudying.cf/images/social-banner.jpg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Smart Studying Cours">
+    <meta name="apple-mobile-web-app-title" content="Smart Studying Cours">
+    <meta name="theme-color" content="#000000">
+    <meta name="msapplication-navbutton-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-starturl" content="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" sizes="128x128" href="/images/touch/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/images/touch/icon-128x128.png">
+    <link rel="icon" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/images/touch/icon-192x192.png">
+    <link rel="icon" sizes="256x256" href="/images/touch/icon-256x256.png">
+    <link rel="apple-touch-icon" sizes="256x256" href="/images/touch/icon-256x256.png">
+    <link rel="icon" sizes="384x384" href="/images/touch/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/images/touch/icon-384x384.png">
+    <link rel="icon" sizes="512x512" href="/images/touch/icon-512x512.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/images/touch/icon-512x512.png">
+    <link rel="stylesheet" href="/css/view.css">
+    <script>
+    window.prerenderReady = false;
+    </script>
+    <script src="/js/view.js" type="text/javascript" charset="utf-8" async defer data-autostart></script>
+    <style>
+
+    </style>
+</head>
+
+<body class="night">
+    <script>
+        if(localStorage.getItem('theme') == "light"){
+            document.body.classList.remove('night');
+        }
+    </script>
+    <div id="Loading" class="modal modal-visible">
+        <div class="modal-content">
+            <div class="loader">
+                <svg class="circular" viewBox="25 25 50 50">
+                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div id="snackbar"></div>
+    <div id="main">
+        <header id="header" onclick="history.back()">
+            <b id="Htext">Loading</b>
+        </header><!-- /header -->
+        <div id="stat">
+            <span class="heading-text">
+                <span class="toggle-box">
+                    <input type="checkbox" name="checkbox1" id="toggle-box-checkbox" checked="true" />
+                    <label for="toggle-box-checkbox" class="toggle-box-label-left"></label>
+                    <label for="toggle-box-checkbox" class="toggle-box-label"></label>
+                </span>
+                <script>
+                    if (localStorage.getItem('theme') == "light") {
+                            document.getElementById("toggle-box-checkbox").checked = false;
+                    }
+                </script>
+            <b id="Ttext">Loading</b>&nbsp;<span id="Mtext" class="metaupdate"></span>
+            </span>
+            <span id="offswitch" class="offswitch">
+                <div class="button-off" onclick="load_page('/Cached');"><span><b>Read Offline</b></span></div>
+                <label class="switch">
+                    <input type="checkbox" id="off">
+                    <span class="slider round"></span>
+                </label>
+            </span>
+        </div>
+        <div id="content"></div> 
+    </div>
+    <footer id="footer">
+        <h2>
+            <span style="color:var(--text-color)">
+                <svg width="28" height="32" viewBox="0 0 15 8" style="fill:var(--text-color);transition: 1s;">
+                <path fill-rule="evenodd" d="M9.5 3L8 4.5 11.5 8 8 11.5 9.5 13 14 8 9.5 3zm-5 0L0 8l4.5 5L6 11.5 2.5 8 6 4.5 4.5 3z"></path>
+                </svg>
+                 With 
+                 <svg width="22" height="24" viewBox="0 0 12 12" style="fill:var(--text-color);transition: 1s;">
+                    <path fill-rule="evenodd" d="M9 2c-.97 0-1.69.42-2.2 1-.51.58-.78.92-.8 1-.02-.08-.28-.42-.8-1-.52-.58-1.17-1-2.2-1-1.632.086-2.954 1.333-3 3 0 .52.09 1.52.67 2.67C1.25 8.82 3.01 10.61 6 13c2.98-2.39 4.77-4.17 5.34-5.33C11.91 6.51 12 5.5 12 5c-.047-1.69-1.342-2.913-3-3z"></path>
+                </svg>
+                 By 
+                 <a class="footlink" href="https://ali.js.org">Ali Bouhrouche</a>
+            </span>
+            </h2>
+    </footer>
+</body>
+
+</html>
