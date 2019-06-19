@@ -182,7 +182,7 @@ function load_cached(url) {
 function resolvejson(url,ok,err){
 	fetch(url + (url.slice(-1) !== "/" ? "" : "index") + '.json')
 		.then(function (response){if (response.status !== 200) {err(response.status.toString());}else{response.json().then(ok);}})
-		.catch(err(null));
+		.catch(function(){err(null);});
 }
 function update_from_net(url){
 	resolvejson(url,function (data) {
