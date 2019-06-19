@@ -253,9 +253,7 @@ function fromnet(url){
     modal.className = "modal modal-visible";
     resolvejson(url,function (data) {
         loadpagejson(data);
-    },function(statusc) {
-    	neterror(statusc);
-    });
+    },neterror);
 }
 window.onpopstate = function (e) {
     if(e.state.json){
