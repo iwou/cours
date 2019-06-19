@@ -1,9 +1,8 @@
-var db;
-var currjson;
-var modal = document.getElementById("Loading");
 if ((!window.indexedDB) || !('fetch' in window) || !('serviceWorker' in navigator)) {
     location.href = "Unsupported.html";
 }
+var db,currjson;
+var modal = document.getElementById("Loading");
 function isArray(a) {
     return Object.prototype.toString.call(a) === "[object Array]";
 }
@@ -56,15 +55,14 @@ function getQueryVariable(variable) {
     }
     return (false);
 }
-function getComments(elem) {
-    var children = elem.childNodes;
-    var comments = [];
-    for (var i = 0, len = children.length; i < len; i++) {
-        if (children[i].nodeType == Node.COMMENT_NODE) {
-            comments.push(children[i]);
-        }
-    }
-    return comments;
+function pushH(data,url) {
+	if(data){
+		var stateObj = { url: data["Path"] , json: data};
+ 		history.pushState(stateObj, "",  data["Path"]);
+ 	}else{
+ 		var stateObj = { url: url};
+ 		history.pushState(stateObj, "",  url);
+ 	}  
 }
 function pad(str, num) {
     return str.toString().padStart(num, '0');
@@ -78,23 +76,19 @@ function showmsg(msg) {
     x.className = "show";
     setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
 }
-function loadpagejson(data,push) {
+function loadpagejson(data) {
     document.getElementById("off").disabled = false;
     currjson = data;
-    if(!push){
-        var stateObj = { url: data["Path"] };
-        history.pushState(stateObj, "", '?' + data["Path"]);
-    }
     document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = data["Title"] ? data["Title"] : "Untitled";
-    document.getElementsByTagName("html")[0].setAttribute("lang",data["Lang"]);
+    document.getElementsByTagName("html")[0].setAttribute("lang",data["Lang"] !== "" ? data["Lang"] : "en");
     setmetaattr("desc", data["Description"]);
     setmetaattr("desc1", data["Description"]);
     setmetaattr("desc2", data["Description"]);
     setmetaattr("keyw", data["Keywords"]);
     setmetaattr("title1", data["Title"]);
     setmetaattr("title2", data["Title"]);
-    setmetaattr("img1", data["Img"]);
-    setmetaattr("img2", data["Img"]);
+    setmetaattr("img1", location.hostname + (data["Img"] !== "" ? data["Img"] : "/images/social-banner.jpg"));
+    setmetaattr("img2", location.hostname + (data["Img"] !== "" ? data["Img"] : "/images/social-banner.jpg"));
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(parse_content(data["Content"]));
     var Udate = new Date(data["Updated"]);
@@ -104,23 +98,10 @@ function loadpagejson(data,push) {
 function savetocache(data,quiet){
     if(db){
         var transaction = db.transaction(["Cours"], "readwrite");
-        transaction.oncomplete = function(event) {
-           if(!quiet){
-              showmsg("Saved Successfully");
-          }
-        };
-
-        transaction.onerror = function(event) {
-            if(!quiet){
-              showmsg("Save Failed");
-            }
-        };
-
+        transaction.oncomplete = function(event) {if(!quiet){showmsg("Saved Successfully");}};
+        transaction.onerror = function(event) {showmsg("Save Failed");};
         var objectStore = transaction.objectStore("Cours");
-          var request = objectStore.add(data);
-          request.onsuccess = function(event) {
-
-          };
+        var request = objectStore.add(data);
     }
 }
 function clearccard(t){
@@ -128,6 +109,7 @@ function clearccard(t){
     t.parentElement.remove();
 }
 function list_cached(){
+	currjson = null;
     document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = "Cached Articles";
     var Udate = new Date(Date.now());
     document.getElementById("Mtext").innerText = " - Updated " + Udate.getDate() + '/' + Udate.getMonth() + '/' + Udate.getFullYear() + ' ' + pad(Udate.getHours(), 2) + ':' + pad(Udate.getMinutes(), 2);
@@ -138,21 +120,29 @@ function list_cached(){
         objectStore.openCursor().onsuccess = function(event) {
         var cursor = event.target.result;
           if (cursor) {
-              var d = make(["div", { class: "card", "data-url": cursor.value.Path},
-                                   ["a", { class: "container link", "href": '?' + cursor.value.Path},
+          document.getElementById("content").appendChild(make(["div", { class: "card", "data-url": cursor.value.Path, "onclick" : "gotourl('" +  cursor.value.Path + "');"},
+                                   ["div", { class: "container"},
                                        ["h4",["b",cursor.value.Title]],
                                        ["p",cursor.value.Description]
                                    ],
                                    ["span",{class: "closebtn",onclick: "clearccard(this)"},"×"]
-                                   ]);
-            document.getElementById("content").appendChild(d);
-            cursor.continue();
-          }
-          else {
-
+                                   ]));
+           cursor.continue();
           }
         };
     }
+}
+function gotourl(url,e) {
+	load_page(url);
+	pushH(currjson,url);
+	if(e){
+		e.preventDefault();
+	}
+}
+function list_cached2() {
+    var stateObj = { url: "/Cached" };
+    history.pushState(stateObj, "", "/Cached");
+    list_cached();
 }
 function del_cached(url,quiet) {
      if(db){
@@ -175,7 +165,7 @@ function del_cached(url,quiet) {
         };
     }
 }
-function load_cached(url, push, redirect) {
+function load_cached(url) {
     if(db){
         var transaction = db.transaction(["Cours"]);
         var objectStore = transaction.objectStore("Cours");
@@ -189,30 +179,30 @@ function load_cached(url, push, redirect) {
         };
     }
 }
+function resolvejson(url,ok,err){
+	fetch(url + (url.slice(-1) !== "/" ? "" : "index") + '.json')
+		.then(function (response){if (response.status !== 200) {err(response.status.toString());}else{response.json().then(ok);}})
+		.catch(err(null));
+}
 function update_from_net(url){
-    fetch((url.slice(-1) !== "/" ? url : "/index") + '.json')
-        .then(function (response){
-            if ((response.status !== 200) || (response.headers.get("content-type").indexOf("application/json")) == -1) {
-                return 0;
-            }else{
-                response.json().then(function (data) {
+	resolvejson(url,function (data) {
                     if (currjson["Updated"] !== data["Updated"]){
                         del_cached(url,true);
                         savetocache(data,true);
                         loadpagejson(data);
-                    }
-                }); 
-            }
-        })
+                    }},function() {return ;});
 }
-function load_page(url, push) {
-    if(url == "/Cached"){
-        var stateObj = { url: "/Cached" };
-        history.pushState(stateObj, "", "/?/Cached");
+function load_page(url) {
+	var query = window.location.search.substring(1);
+	if((url == '/') && (query.charAt(0) == '/')){
+		//if(confirm("Do You Want To Load Unverified Content? It Can Steal And Control Your Data!")){
+			loadpagejson(JSON.parse(atob(query.substring(1))));
+			document.getElementById("off").disabled = true;
+			modal.className = "modal modal-hidden";
+		//}
+	}else if(url == "/Cached"){
         list_cached();
         modal.className = "modal modal-hidden";
-    }else if(url == "/404"){
-        neterror();
     }else{
      if(db){
         var transaction = db.transaction(["Cours"]);
@@ -225,17 +215,15 @@ function load_page(url, push) {
               update_from_net(url);
           }else{
               document.getElementById("off").checked = false;
-              fromnet(url,push);
+              fromnet(url);
           }
         };
     }else{
-        fromnet(url,push);
+        fromnet(url);
     }}
 }
 function neterror(statusc){
     document.getElementById("off").disabled = true;
-    var stateObj = { url: "/404"};
-    history.pushState(stateObj, "", "?/404");
     document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = "Page Not Found";
     setmetaattr("desc", "Page Not Found");
     setmetaattr("desc1", "Page Not Found");
@@ -251,6 +239,7 @@ function neterror(statusc){
             ["p","Page Not Found"]
         ]]
     ));
+    currjson = null;
     var Udate = new Date(Date.now());
     document.getElementById("Mtext").innerText = " - Updated " + Udate.getDate() + '/' + Udate.getMonth() + '/' + Udate.getFullYear() + ' ' + pad(Udate.getHours(), 2) + ':' + pad(Udate.getMinutes(), 2);
     modal.className = "modal modal-hidden";
@@ -260,36 +249,78 @@ function neterror(statusc){
     document.getElementsByTagName('head')[0].appendChild(statuscode);
     return;
 }
-function fromnet(url,push,redirect){
+function fromnet(url){
     modal.className = "modal modal-visible";
-    fetch((url.slice(-1) !== "/" ? url : "/index") + '.json')
-        .then(function (reponse) {
-        if ((reponse.status !== 200) || (reponse.headers.get("content-type").indexOf("application/json")) == -1) {
-               neterror(reponse.status.toString());
-        } else {
-            reponse.json().then(function (data) {
-                loadpagejson(data, push);
-            });
-        }
-    }).catch(neterror);
+    resolvejson(url,function (data) {
+        loadpagejson(data);
+    },function(statusc) {
+    	neterror(statusc);
+    });
 }
 window.onpopstate = function (e) {
-    if (e.state) {
-        load_page(e.state.url,true);
+    if(e.state.json){
+        loadpagejson(e.state.json);  
+    }else{
+    	load_page(location.pathname);
     }
 };
+
 document.addEventListener('click', function (e) {
     var tag = e.target;
     if (tag.tagName == 'A' && tag.href && e.button == 0) {
-        if (tag.origin == document.location.origin) {
-            var newPath = tag.search.substring(1).split("&")[0];
-            if (tag.pathname == location.pathname) {
-                e.preventDefault();
-                load_page(newPath);
-            }
+        if (tag.origin == location.origin) {
+            var newPath = tag.pathname;
+            load_page(newPath);
+            pushH(currjson,newPath);
+            e.preventDefault();
         }
     }
 });
+
+function copyStringToClipboard (str) {
+   var el = document.createElement('textarea');
+   el.value = str;
+   el.setAttribute('readonly', '');
+   el.style = {position: 'absolute', left: '-9999px'};
+   document.body.appendChild(el);
+   el.select();
+   document.execCommand('copy');
+   document.body.removeChild(el);
+}
+
+function share() {
+	if (navigator.share !== undefined) {
+    navigator.share({
+      title: document.title,
+      url: location.href
+    }).catch(function() {
+      	copyStringToClipboard(location.href);
+	  	showmsg("Copied To The ClipBoard");
+      });
+  } else {
+    copyStringToClipboard(location.href);
+  	showmsg("Copied To The ClipBoard");
+  }
+}
+
+function tourl() {
+	if(currjson){
+	var durl = location.host + '/?/' + btoa(JSON.stringify(currjson));
+	if (navigator.share !== undefined) {
+    navigator.share({
+      title: document.title,
+      url: durl
+    }).catch(function() {
+      	copyStringToClipboard(durl);
+	  	showmsg("Copied To The ClipBoard");
+      });
+	  } else {
+	    copyStringToClipboard(durl);
+	  	showmsg("Copied To The ClipBoard");
+	  }
+  }
+}
+
 document.getElementById("toggle-box-checkbox").addEventListener("change", function () {
     if (this.checked) {
         document.body.classList.add('night');
@@ -325,8 +356,6 @@ var script = document.currentScript || (function () {
 
 var request = indexedDB.open("Cache",2);
 
-var query = window.location.search.substring(1);
-
 request.onerror = function (event) {
     showmsg("Why didn't you allow my web app to use IndexedDB?!");
     if (script.hasAttribute('data-autostart')) {
@@ -335,15 +364,9 @@ request.onerror = function (event) {
     }
 };
 function loaddom(){
-    var q = location.search.substring(1).split("&")[0];
-    var href = location.href;
-    if(q == ""){ 
-        q = '/';
-        href = href + '/?/';
-    }
-    var stateObj = { url: q };
+    load_page(location.pathname);
+    var stateObj = { url: location.pathname , json: currjson };
     history.replaceState(stateObj, "", location.href);
-    load_page(q, true, true);
 }
 request.onsuccess = function (event) {
 db = event.target.result;
@@ -369,3 +392,14 @@ navigator.serviceWorker.register('/sw.js').then(function(registration) {
   showmsg("Install Failed");
 });
 });
+navigator.serviceWorker.addEventListener('message', function(event) {
+	if(event.data["func"] == "msg"){
+		showmsg(event.data["msg"]);
+	}
+});
+window.onscroll = function() {
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+  document.getElementById("myBar").style.width = scrolled + "%";
+}
