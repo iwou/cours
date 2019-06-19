@@ -87,8 +87,9 @@ function loadpagejson(data) {
     setmetaattr("keyw", data["Keywords"]);
     setmetaattr("title1", data["Title"]);
     setmetaattr("title2", data["Title"]);
-    setmetaattr("img1", location.hostname + (data["Img"] !== "" ? data["Img"] : "/images/social-banner.jpg"));
-    setmetaattr("img2", location.hostname + (data["Img"] !== "" ? data["Img"] : "/images/social-banner.jpg"));
+    
+    setmetaattr("img1", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
+    setmetaattr("img2", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(parse_content(data["Content"]));
     var Udate = new Date(data["Updated"]);
