@@ -1,21 +1,20 @@
 var offlineFundamentals = [
   '/',
   '/css/view.css',
-  '/js/view.js',
-  '/images/touch/icon-128x128.png',
-  '/images/touch/icon-192x192.png',
-  '/images/touch/icon-256x256.png',
-  '/images/touch/icon-384x384.png',
-  '/images/touch/icon-512x512.png'
+  '/js/view.js'
 ];
-var version = 'v1::';
+
+var version = 'v1::1::';
+
+function precache() {
+  return caches.open(version + 'fundamentals').then(function (cache) {
+    return cache.addAll(offlineFundamentals);
+  });
+}
 self.addEventListener('install', function installer (event) {
-  event.waitUntil(
-    caches
-      .open(version + 'fundamentals')
-      .then(function prefill (cache) {
-        return cache.addAll(offlineFundamentals);
-      })
+    event.waitUntil(precache().then(function () {
+      return self.skipWaiting();
+    })
   );
 });
 
@@ -24,23 +23,30 @@ self.addEventListener('activate', function activator (event) {
     caches.keys().then(function (keys) {
       return Promise.all(keys
         .filter(function (key) {
-          return key.indexOf(version) !== 0;
+          return !key.startsWith(version);
         })
         .map(function (key) {
           return caches.delete(key);
         })
       );
+    }).then(function() {
+      return self.clients.claim();
+    }).then(function() {
+      return self.clients.matchAll().then(function(clients1) {
+        return Promise.all(clients1.map(function(client) {
+          return client.postMessage({"func":"msg","msg":"Ready For Offline"});
+        }));
+      });
     })
   );
-  event.waitUntil(self.clients.claim());
 });
 self.addEventListener('fetch', function fetcher (event) {
   var request = event.request;
-  if (request.method !== 'GET') {
-    event.respondWith(fetch(request)); return;
-  }
   const requestURL = new URL(event.request.url);
-  if(requestURL.pathname == '/'){
+  if ((request.method !== 'GET') || (request.destination == "")) {
+    return;
+  }
+  if(request.destination == "document"){
     return event.respondWith(caches.match('/'));
   }
   event.respondWith(async function() {
