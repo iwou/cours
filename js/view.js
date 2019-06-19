@@ -367,6 +367,7 @@ function loaddom(){
     load_page(location.pathname);
     var stateObj = { url: location.pathname , json: currjson };
     history.replaceState(stateObj, "", location.href);
+    window.prerenderReady = false;
 }
 request.onsuccess = function (event) {
 db = event.target.result;
