@@ -155,6 +155,29 @@ body.night {
     background: var(--text-color);
 }
 
+/* Style the header: fixed position (always stay at the top) */
+.header {
+  position: fixed;
+  top: 0;
+  z-index: 4;
+  width: 100%;
+  background: #00000000;
+}
+
+/* The progress container (grey background) */
+.progress-container {
+  width: 100%;
+  height: 4px;
+  background: #00000000;
+}
+
+/* The progress bar (scroll indicator) */
+.progress-bar {
+  height: 4px;
+  background: var(--link-color);
+  width: 0%;
+}
+
 .loader {
     position: relative;
     margin: 0 auto;
@@ -352,6 +375,42 @@ pre {
 .button-off:hover span:after {
   opacity: 1;
   right: 0;
+}
+.button-off2 {
+  border-radius: 4px;
+  background-color: #0000004f;
+  border: none;
+  color: #FFFFFF;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.button-off2 span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.button-off2 span:before {
+  content: '\00ab';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  left: -20px;
+  transition: 0.5s;
+}
+
+.button-off2:hover span {
+  padding-left: 25px;
+}
+
+.button-off2:hover span:before {
+  opacity: 1;
+  left: 0;
 }
 
 .link:link,
