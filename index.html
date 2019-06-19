@@ -3,6 +3,7 @@
 <head>
     <title>Smart Studying</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta id="keyw" name="keywords" content="Smart, Study, View, Cours" />
     <meta id="desc" name="description" content="Smart Studying Cours" />
     <meta property="og:type" content="article">
@@ -24,7 +25,6 @@
     <meta name="msapplication-navbutton-color" content="#000000">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="msapplication-starturl" content="/">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" sizes="128x128" href="/images/touch/icon-128x128.png">
     <link rel="apple-touch-icon" sizes="128x128" href="/images/touch/icon-128x128.png">
     <link rel="icon" sizes="192x192" href="icon-192x192.png">
@@ -40,12 +40,13 @@
     window.prerenderReady = false;
     </script>
     <script src="/js/view.js" type="text/javascript" charset="utf-8" async defer data-autostart></script>
-    <style>
-
-    </style>
 </head>
-
 <body class="night">
+    <div class="header">
+      <div class="progress-container">
+        <div class="progress-bar" id="myBar"></div>
+      </div> 
+    </div>
     <script>
         if(localStorage.getItem('theme') == "light"){
             document.body.classList.remove('night');
@@ -58,13 +59,14 @@
                     <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
                 </svg>
             </div>
+            <noscript style="font-size: 2em;font-weight: bold;">JavaScript Required</noscript>
         </div>
     </div>
     <div id="snackbar"></div>
     <div id="main">
-        <header id="header" onclick="history.back()">
+        <header id="header">
             <b id="Htext">Loading</b>
-        </header><!-- /header -->
+        </header>
         <div id="stat">
             <span class="heading-text">
                 <span class="toggle-box">
@@ -77,10 +79,13 @@
                             document.getElementById("toggle-box-checkbox").checked = false;
                     }
                 </script>
+                <div class="button-off2" onclick="history.back();"><span><b>Back</b></span></div>
             <b id="Ttext">Loading</b>&nbsp;<span id="Mtext" class="metaupdate"></span>
             </span>
             <span id="offswitch" class="offswitch">
-                <div class="button-off" onclick="load_page('/Cached');"><span><b>Read Offline</b></span></div>
+                <div class="button-off" onclick="share();"><span><b>Share</b></span></div>
+                <div class="button-off" onclick="tourl();"><span><b>To Base64</b></span></div>
+                <div class="button-off" onclick="list_cached2();"><span><b>Read Offline</b></span></div>
                 <label class="switch">
                     <input type="checkbox" id="off">
                     <span class="slider round"></span>
