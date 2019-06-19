@@ -87,7 +87,6 @@ function loadpagejson(data) {
     setmetaattr("keyw", data["Keywords"]);
     setmetaattr("title1", data["Title"]);
     setmetaattr("title2", data["Title"]);
-    
     setmetaattr("img1", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
     setmetaattr("img2", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
     document.getElementById("content").innerHTML = "";
@@ -182,8 +181,8 @@ function load_cached(url) {
 }
 function resolvejson(url,ok,err){
 	fetch(url + (url.slice(-1) !== "/" ? "" : "index") + '.json')
-		.then(function (response){if (response.status !== 200) {err(response.status.toString());}else{response.json().then(ok);}})
-		.catch(function(){err(null);});
+		.then(function (response){if (response.status !== 200) {err(response.status.toString());return 0;}else{response.json().then(ok);}})
+		.catch(err);
 }
 function update_from_net(url){
 	resolvejson(url,function (data) {
@@ -196,11 +195,9 @@ function update_from_net(url){
 function load_page(url) {
 	var query = window.location.search.substring(1);
 	if((url == '/') && (query.charAt(0) == '/')){
-		//if(confirm("Do You Want To Load Unverified Content? It Can Steal And Control Your Data!")){
-			loadpagejson(JSON.parse(atob(query.substring(1))));
-			document.getElementById("off").disabled = true;
-			modal.className = "modal modal-hidden";
-		//}
+	loadpagejson(JSON.parse(atob(query.substring(1))));
+	document.getElementById("off").disabled = true;
+	modal.className = "modal modal-hidden";
 	}else if(url == "/Cached"){
         list_cached();
         modal.className = "modal modal-hidden";
@@ -232,8 +229,8 @@ function neterror(statusc){
     setmetaattr("keyw", "Page Not Found");
     setmetaattr("title1", "Page Not Found");
     setmetaattr("title2", "Page Not Found");
-    setmetaattr("img1", "");
-    setmetaattr("img2", "");
+    setmetaattr("img1", location.hostname + "/images/social-banner.jpg");
+    setmetaattr("img2", location.hostname + "/images/social-banner.jpg");
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(parse_content(
         [[
