@@ -50,7 +50,31 @@
 }
 </style>
 <body>
-  <div class="container">Your Browser Is Unsupported.<br/>Please Switch to Chrome Or Firefox.</div>
+  <div id="c" class="container">Your Browser Is Unable To Run This App. <br/>Because : <noscript> Javscript Not Enabled</noscript><span id="stat"></span></div>
+  <script type="text/javascript">
+    var el = document.getElementById("stat");
+    var i = 0;
+    if (!window.indexedDB){
+        el.innerText += "IndexedDB ";
+        i++;
+    }if(!('fetch' in window)){
+        el.innerText += i > 0 ? "& " : "";
+        el.innerText += "fetch ";
+        i++;
+    }if(!('serviceWorker' in navigator)){
+        el.innerText += i > 0 ? "& " : "";
+        el.innerText += "ServiceWorker ";
+        i++;
+    }if(i == 0){
+        document.title = "Supported";
+        document.getElementById("c").innerHTML = "Your Browser Is Fully Supported";
+        setTimeout(function(argument) {
+           location.assign(location.origin);
+        },"1000");
+    }else{
+        el.innerText += (i == 1 ? "is " : "Are ") + "Not Supported";
+    }
+  </script>
 </body>
 
 </html>

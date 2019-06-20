@@ -1,7 +1,7 @@
 if ((!window.indexedDB) || !('fetch' in window) || !('serviceWorker' in navigator)) {
     location.href = "Unsupported.html";
 }
-var db,currjson;
+var db,currjson,statusc,errorstr;
 var modal = document.getElementById("Loading");
 function isArray(a) {
     return Object.prototype.toString.call(a) === "[object Array]";
@@ -76,24 +76,28 @@ function showmsg(msg) {
     x.className = "show";
     setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
 }
-function loadpagejson(data) {
+function isvaliddate(d) {
+  if (Object.prototype.toString.call(d) === "[object Date]") {
+  if (isNaN(d.getTime())) {
+    return false;
+  } else {
+    return true;
+  }
+} else {
+  return false;
+}
+}
+function loadpagejson(data,callback1) {
     document.getElementById("off").disabled = false;
     currjson = data;
     document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = data["Title"] ? data["Title"] : "Untitled";
-    document.getElementsByTagName("html")[0].setAttribute("lang",data["Lang"] !== "" ? data["Lang"] : "en");
-    setmetaattr("desc", data["Description"]);
-    setmetaattr("desc1", data["Description"]);
-    setmetaattr("desc2", data["Description"]);
-    setmetaattr("keyw", data["Keywords"]);
-    setmetaattr("title1", data["Title"]);
-    setmetaattr("title2", data["Title"]);
-    setmetaattr("img1", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
-    setmetaattr("img2", location.hostname + (data["Image"] !== "" ? data["Image"] : "/images/social-banner.jpg"));
+    document.getElementsByTagName("html")[0].setAttribute("lang",data["Lang"] ? (data["Lang"] !== "" ? data["Lang"] : "en") : "en");
     document.getElementById("content").innerHTML = "";
-    document.getElementById("content").appendChild(parse_content(data["Content"]));
+    document.getElementById("content").appendChild(parse_content(data["Content"] ? data["Content"] : [[["p","Parse Error"]]]));
     var Udate = new Date(data["Updated"]);
-    document.getElementById("Mtext").innerText = " - Updated " + Udate.getDate() + '/' + Udate.getMonth() + '/' + Udate.getFullYear() + ' ' + pad(Udate.getHours(), 2) + ':' + pad(Udate.getMinutes(), 2);
+    document.getElementById("Mtext").innerText =  " - Updated " + (isvaliddate(Udate) ? Udate.getDate() + '/' + Udate.getMonth() + '/' + Udate.getFullYear() + ' ' + pad(Udate.getHours(), 2) + ':' + pad(Udate.getMinutes(), 2) : "Invalid Date");
     modal.className = "modal modal-hidden";
+    if(callback1){callback1();}
 }
 function savetocache(data,quiet){
     if(db){
@@ -165,7 +169,7 @@ function del_cached(url,quiet) {
         };
     }
 }
-function load_cached(url) {
+function load_cached(url,ok) {
     if(db){
         var transaction = db.transaction(["Cours"]);
         var objectStore = transaction.objectStore("Cours");
@@ -181,26 +185,35 @@ function load_cached(url) {
 }
 function resolvejson(url,ok,err){
 	fetch(url + (url.slice(-1) !== "/" ? "" : "index") + '.json')
-		.then(function (response){if (response.status !== 200) {err(response.status.toString());return 0;}else{response.json().then(ok);}})
+		.then(function (response){if (response.status !== 200) {err(null,response.status.toString(),response.statusText);return 0;}else{response.json().then(ok).catch(er => err(null,"400","Invalid Data"));}})
 		.catch(err);
 }
-function update_from_net(url){
+function update_from_net(url,ok){
 	resolvejson(url,function (data) {
                     if (currjson["Updated"] !== data["Updated"]){
                         del_cached(url,true);
                         savetocache(data,true);
                         loadpagejson(data);
-                    }},function() {return ;});
+                        if(ok){ok();}
+                    }},function() {if(ok){ok();};return ;});
 }
-function load_page(url) {
+function load_page(url,callback1) {
 	var query = window.location.search.substring(1);
 	if((url == '/') && (query.charAt(0) == '/')){
-	loadpagejson(JSON.parse(atob(query.substring(1))));
+  try{
+	   loadpagejson(JSON.parse(atob(query.substring(1))),callback1);
+  }catch(e){
+     loadpagejson({Title:"Invalid Data",Description:"Invalid Data",Content:[[["p","Invalid Data"]]]},callback1);
+     statusc = "400";
+     errorstr = "Invalid Data";
+     currjson = null;
+  }
 	document.getElementById("off").disabled = true;
 	modal.className = "modal modal-hidden";
 	}else if(url == "/Cached"){
         list_cached();
         modal.className = "modal modal-hidden";
+        if(callback1){callback1();}
     }else{
      if(db){
         var transaction = db.transaction(["Cours"]);
@@ -210,47 +223,40 @@ function load_page(url) {
           if(event.target.result){
               document.getElementById("off").checked = true;
               load_cached(url);
-              update_from_net(url);
+              update_from_net(url,callback1);
           }else{
               document.getElementById("off").checked = false;
-              fromnet(url);
+              fromnet(url,callback1);
           }
         };
     }else{
-        fromnet(url);
+        fromnet(url,callback1);
     }}
 }
-function neterror(statusc){
+var okcall;
+function neterror(errm,scode,errorstr1){
+    currjson = null;
+    statusc = scode;
+    errorstr = errorstr1 ? errorstr1 : (scode ? ("Error " + scode) : (errm ? errm.message : "Unknown Error"));
     document.getElementById("off").disabled = true;
-    document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = "Page Not Found";
-    setmetaattr("desc", "Page Not Found");
-    setmetaattr("desc1", "Page Not Found");
-    setmetaattr("desc2", "Page Not Found");
-    setmetaattr("keyw", "Page Not Found");
-    setmetaattr("title1", "Page Not Found");
-    setmetaattr("title2", "Page Not Found");
-    setmetaattr("img1", location.hostname + "/images/social-banner.jpg");
-    setmetaattr("img2", location.hostname + "/images/social-banner.jpg");
+    document.title = document.getElementById("Htext").innerText = document.getElementById("Ttext").innerText = errorstr;
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(parse_content(
         [[
-            ["p","Page Not Found"]
+            ["p",errorstr]
         ]]
     ));
-    currjson = null;
     var Udate = new Date(Date.now());
     document.getElementById("Mtext").innerText = " - Updated " + Udate.getDate() + '/' + Udate.getMonth() + '/' + Udate.getFullYear() + ' ' + pad(Udate.getHours(), 2) + ':' + pad(Udate.getMinutes(), 2);
     modal.className = "modal modal-hidden";
-    var statuscode = document.createElement('meta');
-    statuscode.setAttribute('name', 'prerender-status-code');
-    statuscode.setAttribute('content', statusc ? statusc : "404");
-    document.getElementsByTagName('head')[0].appendChild(statuscode);
+    if(okcall){okcall();}
     return;
 }
-function fromnet(url){
+function fromnet(url,ok){
+    okcall = ok;
     modal.className = "modal modal-visible";
     resolvejson(url,function (data) {
-        loadpagejson(data);
+        loadpagejson(data,ok);
     },neterror);
 }
 window.onpopstate = function (e) {
@@ -301,7 +307,7 @@ function share() {
 
 function tourl() {
 	if(currjson){
-	var durl = location.host + '/?/' + btoa(JSON.stringify(currjson));
+	var durl = location.origin + '/?/' + btoa(JSON.stringify(currjson));
 	if (navigator.share !== undefined) {
     navigator.share({
       title: document.title,
@@ -360,10 +366,49 @@ request.onerror = function (event) {
     }
 };
 function loaddom(){
-    load_page(location.pathname);
+    load_page(location.pathname,function() {
     var stateObj = { url: location.pathname , json: currjson };
     history.replaceState(stateObj, "", location.href);
-    window.prerenderReady = false;
+    setmetaattr("url1", location.href);
+    setmetaattr("url2", location.href);
+    if(location.pathname == '/Cached'){
+    setmetaattr("desc", "Cached Articles");
+    setmetaattr("desc1", "Cached Articles");
+    setmetaattr("desc2", "Cached Articles");
+    setmetaattr("keyw", "Cached Articles");
+    setmetaattr("title1", "Cached Articles");
+    setmetaattr("title2", "Cached Articles");
+    setmetaattr("img1", location.origin + "/images/social-banner.jpg");
+    setmetaattr("img2", location.origin + "/images/social-banner.jpg"); 
+    var statuscode = document.createElement('meta');
+    statuscode.setAttribute('name', 'prerender-status-code');
+    statuscode.setAttribute('content', "400");
+    document.getElementsByTagName('head')[0].appendChild(statuscode);
+    }else if(currjson){
+    setmetaattr("desc", currjson["Description"]);
+    setmetaattr("desc1", currjson["Description"]);
+    setmetaattr("desc2", currjson["Description"]);
+    setmetaattr("keyw", currjson["Keywords"]);
+    setmetaattr("title1", currjson["Title"]);
+    setmetaattr("title2", currjson["Title"]);
+    setmetaattr("img1", location.origin + (currjson["Image"] !== "" ? currjson["Image"] : "/images/social-banner.jpg"));
+    setmetaattr("img2", location.origin + (currjson["Image"] !== "" ? currjson["Image"] : "/images/social-banner.jpg"));
+    }else{
+    setmetaattr("desc", errorstr);
+    setmetaattr("desc1", errorstr);
+    setmetaattr("desc2", errorstr);
+    setmetaattr("keyw", errorstr);
+    setmetaattr("title1", errorstr);
+    setmetaattr("title2", errorstr);
+    setmetaattr("img1", location.origin + "/images/social-banner.jpg");
+    setmetaattr("img2", location.origin + "/images/social-banner.jpg");
+    var statuscode = document.createElement('meta');
+    statuscode.setAttribute('name', 'prerender-status-code');
+    statuscode.setAttribute('content', statusc ? statusc : "404");
+    document.getElementsByTagName('head')[0].appendChild(statuscode);
+    }
+    window.prerenderReady = true;
+    });
 }
 request.onsuccess = function (event) {
 db = event.target.result;
