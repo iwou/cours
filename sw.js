@@ -4,7 +4,7 @@ var offlineFundamentals = [
   '/js/view.js'
 ];
 
-var version = 'v1::1::2::';
+var version = 'v1::1::2::0000000000000::';
 
 function precache() {
   return caches.open(version + 'fundamentals').then(function (cache) {
