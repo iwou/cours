@@ -445,3 +445,13 @@ window.onscroll = function() {
   var scrolled = (winScroll / height) * 100;
   document.getElementById("myBar").style.width = scrolled + "%";
 }
+navigator.storage.persist().then(persisted => {
+  if(persisted) {
+    if(!localStorage.getItem("presistshow")){
+      showmsg("Articles Never Get Deleted.");
+      localStorage.setItem("presistshow","ok");
+    }
+  }else{
+    showmsg("Articles May Get Deleted.");
+  }
+})
